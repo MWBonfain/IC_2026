@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 
-print("bnaco_IC carregado")
+print("banco_IC carregado")
 
 PASTA_DADOS = "Amostras_antes"
 PASTA_SAIDA = "dados_processados"
@@ -45,11 +45,9 @@ def organizar_curvas(lista_arquivos=None, caminho_saida=None):
 
                 identificador = partes[0].strip()
 
-                # ignora cabeçalho tipo ",1000000,..."
                 if identificador == "":
                     continue
 
-                # converte valores
                 valores = []
                 for v in partes[1:]:
                     try:
@@ -57,13 +55,11 @@ def organizar_curvas(lista_arquivos=None, caminho_saida=None):
                     except:
                         valores.append(np.nan)
 
-                # tenta formato padrão
                 try:
                     if "_IDE_" in identificador:
                         amostra, ide_rep = identificador.split("_IDE_")
                         ide, repeticao = ide_rep.split("-")
                     else:
-                        # fallback simples
                         partes_id = identificador.split(" ")
                         amostra = partes_id[0]
                         repeticao = partes_id[1] if len(partes_id) > 1 else 0
@@ -99,9 +95,8 @@ def organizar_curvas(lista_arquivos=None, caminho_saida=None):
 
     return df
 
-# ===============================
+
 # VISUALIZAÇÃO DE CURVAS
-# ===============================
 
 def plot_exemplo(df):
 

@@ -1,4 +1,3 @@
-import banco_IC
 from banco_IC import organizar_curvas
 import tkinter as tk
 from tkinter import filedialog, messagebox
@@ -30,7 +29,7 @@ def selecionar_arquivos():
       if not caminho_saida:
          return
       
-      df = banco_IC.organizar_curvas(
+      df = organizar_curvas(
          lista_arquivos=arquivos,
          caminho_saida=caminho_saida
       )
