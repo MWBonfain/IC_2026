@@ -95,6 +95,36 @@ def organizar_curvas(lista_arquivos=None, caminho_saida=None):
 
     return df
 
+def carregar_dados_excel(caminho):
+
+    df = pd.read_excel(caminho)
+
+    print("Excel carregado")
+    print(f"Total de amostras: {len(df)}")
+
+    return df
+
+def extrair_matriz(df):
+    colunas_freq = [c for c in df.columns if c.startswith("f_")]
+
+    X = df[colunas_freq].values
+
+    print("Matriz extraída")
+    print("Shape:", X.shape)
+
+    return X
+
+def tratar_dados(X):
+
+    media = np.mean(X, axis=0)
+    centerx = X  - media
+    stdr = np.std(centerx, axis=0, ddof=1)
+    stdr[stdr == 0] = 1
+    sr = centerx / stdr
+
+    print("Dados tratados")
+    
+    return sr
 
 # VISUALIZAÇÃO DE CURVAS
 
