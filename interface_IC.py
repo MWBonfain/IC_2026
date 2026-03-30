@@ -70,6 +70,8 @@ def processar_dados():
    janela.update()
 
    sr = banco_IC.tratar_dados(X)
+   X_pca, pca = banco_IC.aplicar_pca(sr)
+   banco_IC.plot_pca(X_pca)
 
    status.config(text=f"Dados prontos para PCA ({len(sr)} amostras)")
    
@@ -88,10 +90,37 @@ def processar_dados():
    df_tratado[colunas_freq] = sr
    df_tratado.to_excel(saida, index=False)
 
+def aplicar_pca_interface():
+   status.config(text="Selecionando Excel tratado... ")
+   janela.update()
+
+   arquivos = filedialog.askopenfilenames(
+        title="Selecione o(s) Excel(s) tratado(s)",
+        filetypes=[("Excel files", "*.xlsx")]
+    )
+
+   if not arquivos:
+        return
+
+   status.config(text="Processando PCA...")
+   janela.update()
+
+   for caminho in arquivos:
+
+        df = banco_IC.carregar_dados_excel(caminho)
+        X = banco_IC.extrair_matriz(df)
+        sr = banco_IC.tratar_dados(X)
+
+        X_pca, pca = banco_IC.aplicar_pca(sr)
+
+        banco_IC.plot_pca(X_pca, df)
+
+   status.config(text="PCA finalizado!")
+
 # interface
 janela = tk.Tk()
 janela.title("Processador de Curvas - IC")
-janela.geometry("400x300")
+janela.geometry("600x400")
 janela.configure(bg="#1e1e2f")
 
 frame = tk.Frame(janela,bg="#1e1e2f")
@@ -131,6 +160,19 @@ botao_processar = tk.Button(
    pady=8
 )
 botao_processar.pack(pady=8, padx=50, fill='x')
+
+botao_pca = tk.Button(
+    frame,
+    text="Aplicar PCA",
+    command=aplicar_pca_interface,
+    bg="#9C27B0",
+    fg="white",
+    font=("Arial", 10, "bold"),
+    relief="flat",
+    padx=10,
+    pady=8
+)
+botao_pca.pack(fill="x",padx=40, pady=8 )
 
 status = tk.Label(
     frame,

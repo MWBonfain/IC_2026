@@ -2,6 +2,9 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
+from sklearn.decomposition import PCA 
+from sklearn.neighbors import KNeighborsClassifier
+from matplotlib.colors import ListedColormap
 
 print("banco_IC carregado")
 
@@ -126,30 +129,75 @@ def tratar_dados(X):
     
     return sr
 
-# VISUALIZAÇÃO DE CURVAS
 
-def plot_exemplo(df):
 
-    primeira = df.iloc[0]
+def aplicar_pca(X, n_componentes=2):
+    pca = PCA(n_components=n_componentes)
 
-    valores = primeira.iloc[3:].values
+    X_pca = pca.fit_transform(X)
 
-    frequencias = np.logspace(0, 6, len(valores))
+    print("\nPCA aplicado!")
+    print("Variância aplicada:", pca.explained_variance_ratio_)
+    return X_pca, pca
 
-    plt.figure(figsize=(8,5))
+def plot_pca(X_pca, df):
 
-    plt.plot(frequencias, valores)
+    labels = df["amostra"].values
+    classes = np.unique(labels)
 
-    plt.xscale("log")
+    
+    colors = [
+        "#9C27B0",
+        "#2196F3",
+        "#4CAF50",
+        "#FF9800",
+        "#E91E63",
+        "#00BCD4"
+    ]
 
-    plt.xlabel("Frequência (Hz)")
-    plt.ylabel("Impedância (Ω)")
-    plt.title(f"Curva exemplo – {primeira['amostra']}")
+    # mapear classes → números
+    label_map = {classe: i for i, classe in enumerate(classes)}
+    y = np.array([label_map[l] for l in labels])
 
+    knn = KNeighborsClassifier(n_neighbors=3)
+    knn.fit(X_pca, y)
+
+    x_min, x_max = X_pca[:, 0].min() - 1, X_pca[:, 0].max() + 1
+    y_min, y_max = X_pca[:, 1].min() - 1, X_pca[:, 1].max() + 1
+
+    xx, yy = np.meshgrid(
+        np.linspace(x_min, x_max, 200),
+        np.linspace(y_min, y_max, 200)
+    )
+
+    Z = knn.predict(np.c_[xx.ravel(), yy.ravel()])
+    Z = Z.reshape(xx.shape)
+
+
+    cmap_fundo = ListedColormap(colors[:len(classes)])
+    plt.figure(figsize=(7,6))
+    plt.contourf(xx, yy, Z, alpha=0.15, cmap=cmap_fundo)
+
+    for i, classe in enumerate(classes):
+
+        idx = labels == classe
+
+        plt.scatter(
+            X_pca[idx, 0],
+            X_pca[idx, 1],
+            color=colors[i],
+            label=classe,
+            edgecolors="white",
+            s=60
+        )
+
+    plt.xlabel("PC1")
+    plt.ylabel("PC2")
+    plt.title("PCA - Tratamento com dados")
+
+    plt.legend()
     plt.grid(True)
 
+    plt.tight_layout()
     plt.show()
-
-if __name__ == "__main__":
-    df = organizar_curvas()
-    plot_exemplo(df)
+    plt.close()
