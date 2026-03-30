@@ -92,27 +92,55 @@ def processar_dados():
 janela = tk.Tk()
 janela.title("Processador de Curvas - IC")
 janela.geometry("400x300")
+janela.configure(bg="#1e1e2f")
 
-label = tk.Label(janela, text="Análise de Espectrometria", font=("Arial", 14, "bold"))
-label.pack(pady=20)
+frame = tk.Frame(janela,bg="#1e1e2f")
+frame.pack(pady=30)
 
-botao = tk.Button(janela, text="Selecionar Arquivos CSV", command=selecionar_arquivos,
-font=("Arial", 10), bg="#4CAF50", fg="white", padx=10, pady=5)
-botao.pack(pady=10)
+titulo = tk.Label(
+   frame,
+   text="Análise de Espectrometria", 
+   font=("Arial", 14, "bold"),
+   bg="#1e1e2f",
+   fg="white"
+)
+titulo.pack(pady=20)
 
-status= tk.Label(janela, text="Aguardando ação...", font=("Arial", 9))
-status.pack(pady=10)
+botao_csv = tk.Button(
+   frame,
+   text="Selecionar Arquivos CSV", 
+   command=selecionar_arquivos,
+   font=("Arial", 10, "bold"),
+   relief="flat",
+   bg="#4CAF50", 
+   fg="white", 
+   padx=10, 
+   pady=8
+)
+botao_csv.pack(pady=8, padx=40, fill='x')
 
 botao_processar = tk.Button(
-   janela,
+   frame,
    text="Processar Dados",
    command=processar_dados,
    bg="#2196F3",
    fg="white",
+   font=("Arial", 10, "bold"),
+   relief="flat",
    padx=10,
-   pady=5
+   pady=8
 )
-botao_processar.pack(pady=10)
+botao_processar.pack(pady=8, padx=50, fill='x')
+
+status = tk.Label(
+    frame,
+    text="Aguardando ação...",
+    font=("Arial", 9),
+    bg="#1e1e2f",
+    fg="#cccccc"
+)
+status.pack(pady=15)
+
 
 if __name__ == "__main__":
     janela.mainloop()
