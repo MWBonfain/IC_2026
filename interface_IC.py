@@ -70,8 +70,6 @@ def processar_dados():
    janela.update()
 
    sr = banco_IC.tratar_dados(X)
-   X_pca, pca = banco_IC.aplicar_pca(sr)
-   banco_IC.plot_pca(X_pca)
 
    status.config(text=f"Dados prontos para PCA ({len(sr)} amostras)")
    
