@@ -5,6 +5,7 @@ import os
 from sklearn.decomposition import PCA 
 from sklearn.neighbors import KNeighborsClassifier
 from matplotlib.colors import ListedColormap
+from matplotlib.widgets import CheckButtons 
 
 print("banco_IC carregado")
 
@@ -173,10 +174,11 @@ def plot_pca(X_pca, df):
     Z = knn.predict(np.c_[xx.ravel(), yy.ravel()])
     Z = Z.reshape(xx.shape)
 
+    plt.figure(figsize=(7,6))
 
     cmap_fundo = ListedColormap(colors[:len(classes)])
-    plt.figure(figsize=(7,6))
-    plt.contourf(xx, yy, Z, alpha=0.15, cmap=cmap_fundo)
+    fundo = plt.contourf(xx, yy, Z, alpha=0.15, cmap=cmap_fundo)
+    
 
     for i, classe in enumerate(classes):
 
@@ -197,6 +199,16 @@ def plot_pca(X_pca, df):
 
     plt.legend()
     plt.grid(True)
+
+    rax = plt.axes([0.75, 0.4, 0.2, 0.15]) 
+    check = CheckButtons(rax, ["Regiões"], [True])
+
+    def toggle(label):
+        visivel = fundo.get_visible()
+        fundo.set_visible(not visivel)
+        plt.draw()
+
+    check.on_clicked(toggle)
 
     plt.tight_layout()
     plt.show()
