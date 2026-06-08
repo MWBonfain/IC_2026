@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
+import re
 from sklearn.decomposition import PCA 
 from sklearn.neighbors import KNeighborsClassifier
 from matplotlib.colors import ListedColormap
@@ -16,7 +17,7 @@ ARQUIVO_SAIDA = "curvas_impedancia_organizadas.xlsx"
 os.makedirs(PASTA_SAIDA, exist_ok=True)
 
 
-def organizar_curvas(lista_arquivos=None, caminho_saida=None):
+def organizar_curvas(lista_arquivos=None, caminho_saida=None):   #jeito antigo
 
 
     registros = []
@@ -96,6 +97,157 @@ def organizar_curvas(lista_arquivos=None, caminho_saida=None):
     print("SALVANDO EM:", caminho_saida)
 
     df.to_excel(caminho_saida, index=False)
+
+    return df
+
+def organizar_curvas_horizontal(lista_arquivos=None, caminho_saida=None): #jeito novo
+
+    dados = {}
+    frequencias_ref = None
+
+    if lista_arquivos is None:
+        arquivos = [
+            os.path.join(PASTA_DADOS, a)
+            for a in os.listdir(PASTA_DADOS)
+            if a.endswith(".csv")
+        ]
+    else:
+        arquivos = lista_arquivos
+
+    for caminho in arquivos:
+
+        arquivo = os.path.basename(caminho)
+        print(f"Lendo arquivo: {arquivo}")
+
+        try:
+
+            match = re.search(
+                r"IDE(\d+).*_([A-Za-z]+)(\d+)",
+                arquivo
+            )
+
+            if match:
+                
+                ide = int(match.group(1))
+                amostra = match.group(2)
+                repeticao = int(match.group(3))
+            else:
+                 match = re.search(
+            r"([A-Za-z]+)_IDE-(\d+)",
+            arquivo
+        )
+
+            if match:
+
+                amostra = match.group(1)
+                ide = int(match.group(2))
+                repeticao = 1
+
+            else:
+
+                print(f"Ignorado: {arquivo}")
+                continue
+
+
+
+        except Exception as e:
+            print(f"Erro nome {arquivo}: {e}")
+            continue
+
+        try:
+
+            with open(caminho, "r", encoding="utf-8") as f:
+                conteudo = f.readlines()
+
+            frequencias = []
+            impedancias = []
+
+            for linha in conteudo[4:]:
+
+                partes = linha.strip().split(";")
+
+                if len(partes) < 11:
+                    continue
+
+                try:
+
+                    freq = float(
+                        partes[4].replace(",", ".")
+                    )
+
+                    imp = float(
+                        partes[10].replace(",", ".")
+                    )
+
+                    frequencias.append(freq)
+                    impedancias.append(imp)
+
+                except:
+                    continue
+
+            if len(impedancias) == 0:
+                continue
+
+            if frequencias_ref is None:
+                frequencias_ref = frequencias
+
+            chave = f"{amostra}{repeticao}"
+
+            if chave not in dados:
+                dados[chave] = {}
+
+            dados[chave][f"IDE{ide}"] = impedancias
+
+            print(
+                f"{arquivo} → {len(impedancias)} pontos"
+            )
+
+        except Exception as e:
+            print(f"Erro CSV {arquivo}: {e}")
+
+    linhas_excel = []
+
+    for amostra in sorted(dados.keys()):
+
+        linha = {}
+
+        for ide in sorted(dados[amostra].keys()):
+
+            curva = dados[amostra][ide]
+
+            for freq, imp in zip(frequencias_ref, curva):
+
+                linha[(ide, str(freq))] = imp
+
+        linhas_excel.append(
+            pd.Series(
+                linha,
+                name=amostra
+            )
+        )
+
+    df = pd.DataFrame(linhas_excel)
+
+    df.columns = pd.MultiIndex.from_tuples(df.columns)
+
+    df.index.name = "ID"
+
+    print("Shape final:", df.shape)
+
+    if caminho_saida is None:
+        caminho_saida = os.path.join(
+            PASTA_SAIDA,
+            "curvas_horizontal.xlsx"
+        )
+
+    print("SALVANDO EM:", caminho_saida)
+
+    with pd.ExcelWriter(
+        caminho_saida,
+        engine="openpyxl"
+    ) as writer:
+
+        df.to_excel(writer)
 
     return df
 

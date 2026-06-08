@@ -31,7 +31,7 @@ def selecionar_arquivos():
       if not caminho_saida:
          return
       
-      df = organizar_curvas(
+      df = banco_IC.organizar_curvas_horizontal(
          lista_arquivos=arquivos,
          caminho_saida=caminho_saida
       )
