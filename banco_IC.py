@@ -253,22 +253,36 @@ def organizar_curvas_horizontal(lista_arquivos=None, caminho_saida=None): #jeito
 
 def carregar_dados_excel(caminho):
 
-    df = pd.read_excel(caminho)
+    df = pd.read_excel(caminho, header=[0, 1])
+    df = df.dropna(how="all")
+
+    segunda_coluna = df.columns[1]
+
+    df = df[
+        df[segunda_coluna].astype(str) != "ID"
+    ]
+
+    df = df.reset_index(drop=True)
 
     print("Excel carregado")
     print(f"Total de amostras: {len(df)}")
+    print(df.columns)
+    print(df.iloc[:, 0])
 
     return df
 
 def extrair_matriz(df):
-    colunas_freq = [c for c in df.columns if c.startswith("f_")]
+    X = df.iloc[:, 2:]
+    X = X.apply(pd.to_numeric, errors="coerce")
+    X = X.fillna(0)
 
-    X = df[colunas_freq].values
+    X = X.values
 
     print("Matriz extraída")
     print("Shape:", X.shape)
 
     return X
+
 
 def tratar_dados(X):
 
@@ -295,7 +309,17 @@ def aplicar_pca(X, n_componentes=2):
 
 def plot_pca(X_pca, df):
 
-    labels = df["amostra"].values
+    labels = df.iloc[:, 1]
+    labels = labels.dropna()
+
+    labels = labels[
+    (labels != "ID") &
+    (labels != "Unnamed: 0_level_1")
+]
+
+    labels = labels.astype(str).values
+
+    print(labels)
     classes = np.unique(labels)
 
     

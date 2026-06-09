@@ -83,10 +83,18 @@ def processar_dados():
       status.config(text="Salvamento cancelado")
       return
 
-   df_tratado = df.copy()
-   colunas_freq = [c for c in df.columns if c.startswith("f_")]
-   df_tratado[colunas_freq] = sr
-   df_tratado.to_excel(saida, index=False)
+   df_tratado = pd.DataFrame(
+    sr,
+    columns=df.columns[1:]
+)
+
+   df_tratado.insert(
+    0,
+    df.columns[0],
+    df.iloc[:, 0]
+)
+  
+   df_tratado.to_excel(saida, index=True)
 
 def aplicar_pca_interface():
    status.config(text="Selecionando Excel tratado... ")
