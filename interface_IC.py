@@ -85,7 +85,7 @@ def processar_dados():
 
    df_tratado = pd.DataFrame(
     sr,
-    columns=df.columns[1:]
+    columns=df.columns[2:]
 )
 
    df_tratado.insert(
