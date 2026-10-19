@@ -1,13 +1,10 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import os
 import re
+import plotly.express as px
 from sklearn.decomposition import PCA 
 from sklearn.neighbors import KNeighborsClassifier
-from matplotlib.colors import ListedColormap
-from matplotlib.widgets import CheckButtons 
-
 print("banco_IC carregado")
 
 PASTA_DADOS = "Amostras_antes"
@@ -307,85 +304,64 @@ def aplicar_pca(X, n_componentes=2):
     print("Variância aplicada:", pca.explained_variance_ratio_)
     return X_pca, pca
 
-def plot_pca(X_pca, df):
-
-    labels = df.iloc[:, 1]
-    labels = labels.dropna()
-
-    labels = labels[
-    (labels != "ID") &
-    (labels != "Unnamed: 0_level_1")
-]
-
-    labels = labels.astype(str).values
-
-    print(labels)
-    classes = np.unique(labels)
 
     
-    colors = [
-        "#9C27B0",
-        "#2196F3",
-        "#4CAF50",
-        "#FF9800",
-        "#E91E63",
-        "#00BCD4"
-    ]
+def plot_pca(X_pca, df, classes=None):
+    # Identificação das amostras na segunda coluna do Excel
+    ids = df.iloc[:, 1].astype(str).to_numpy()
 
-    # mapear classes → números
-    label_map = {classe: i for i, classe in enumerate(classes)}
-    y = np.array([label_map[l] for l in labels])
-
-    knn = KNeighborsClassifier(n_neighbors=3)
-    knn.fit(X_pca, y)
-
-    x_min, x_max = X_pca[:, 0].min() - 1, X_pca[:, 0].max() + 1
-    y_min, y_max = X_pca[:, 1].min() - 1, X_pca[:, 1].max() + 1
-
-    xx, yy = np.meshgrid(
-        np.linspace(x_min, x_max, 200),
-        np.linspace(y_min, y_max, 200)
-    )
-
-    Z = knn.predict(np.c_[xx.ravel(), yy.ravel()])
-    Z = Z.reshape(xx.shape)
-
-    plt.figure(figsize=(7,6))
-
-    cmap_fundo = ListedColormap(colors[:len(classes)])
-    fundo = plt.contourf(xx, yy, Z, alpha=0.15, cmap=cmap_fundo)
-    
-
-    for i, classe in enumerate(classes):
-
-        idx = labels == classe
-
-        plt.scatter(
-            X_pca[idx, 0],
-            X_pca[idx, 1],
-            color=colors[i],
-            label=classe,
-            edgecolors="white",
-            s=60
+    if len(X_pca) != len(ids):
+        raise ValueError(
+            "A quantidade de amostras não corresponde "
+            "à quantidade de pontos da PCA."
         )
 
-    plt.xlabel("PC1")
-    plt.ylabel("PC2")
-    plt.title("PCA - Tratamento com dados")
+    # Monta os dados das componentes principais
+    dados_grafico = {
+        "PC1": X_pca[:, 0],
+        "PC2": X_pca[:, 1],
+        "Amostra": ids
+    }
 
-    plt.legend()
-    plt.grid(True)
+    # Classes são opcionais; precisam representar os grupos reais
+    if classes is not None:
+        if len(classes) != len(X_pca):
+            raise ValueError(
+                "A quantidade de classes não corresponde "
+                "à quantidade de amostras."
+            )
 
-    rax = plt.axes([0.75, 0.4, 0.2, 0.15]) 
-    check = CheckButtons(rax, ["Regiões"], [True])
+        dados_grafico["Classe"] = classes
 
-    def toggle(label):
-        visivel = fundo.get_visible()
-        fundo.set_visible(not visivel)
-        plt.draw()
+    fig = px.scatter(
+        dados_grafico,
+        x="PC1",
+        y="PC2",
+        color="Classe" if classes is not None else None,
+        hover_name="Amostra",
+        hover_data=["PC1", "PC2"],
+        title="PCA - Análise das amostras",
+        labels={
+            "PC1": "Componente Principal 1",
+            "PC2": "Componente Principal 2",
+            "Classe": "Classe"
+        }
+    )
 
-    check.on_clicked(toggle)
+    fig.update_traces(
+        marker=dict(size=11, line=dict(width=1, color="white"))
+    )
 
-    plt.tight_layout()
-    plt.show()
-    plt.close()
+    fig.update_layout(
+        template="plotly_white",
+        width=900,
+        height=650,
+        title_x=0.5,
+        xaxis=dict(zeroline=True),
+        yaxis=dict(zeroline=True)
+    )
+
+    fig.write_html(
+    "grafico_pca.html",
+    auto_open=True
+)
