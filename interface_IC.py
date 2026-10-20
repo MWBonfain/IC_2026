@@ -42,59 +42,92 @@ def selecionar_arquivos():
             f"{len(df)} curvas processadas!"
         )
 
+
 def processar_dados():
+    status.config(text="Carregando Excel...")
+    janela.update()
 
-   status.config(text="Carregando Excel...")
-   janela.update()
-
-   caminho = filedialog.askopenfilename(
+    caminho = filedialog.askopenfilename(
         title="Selecione o arquivo Excel",
         filetypes=[("Excel files", "*.xlsx")]
     )
 
-   if not caminho:
+    if not caminho:
         status.config(text="Nenhum arquivo selecionado")
         return
 
-   status.config(text="Carregando dados...")
-   janela.update()
+    try:
+        status.config(text="Carregando dados...")
+        janela.update()
 
-   df = banco_IC.carregar_dados_excel(caminho)
+        df = banco_IC.carregar_dados_excel(caminho)
 
-   status.config(text="Extraindo matriz...")
-   janela.update()
+        # Guarda os identificadores originais das amostras
+        ids_amostras = df.index.copy()
 
-   X = banco_IC.extrair_matriz(df)
+        status.config(text="Extraindo matriz...")
+        janela.update()
 
-   status.config(text="Tratando dados...")
-   janela.update()
+        X = banco_IC.extrair_matriz(df)
 
-   sr = banco_IC.tratar_dados(X)
+        status.config(text="Tratando dados...")
+        janela.update()
 
-   status.config(text=f"Dados prontos para PCA ({len(sr)} amostras)")
-   
-   saida = filedialog.asksaveasfilename(
-    defaultextension=".xlsx",
-    filetypes=[("Excel files", "*.xlsx")],
-    title="Salvar dados tratados como"
-)
+        sr = banco_IC.tratar_dados(X)
 
-   if not saida:
-      status.config(text="Salvamento cancelado")
-      return
+        # Confere se a matriz manteve todas as dimensões
+        if sr.shape != X.shape:
+            raise ValueError(
+                f"As dimensões mudaram durante o tratamento: "
+                f"{X.shape} -> {sr.shape}"
+            )
 
-   df_tratado = pd.DataFrame(
-    sr,
-    columns=df.columns[2:]
-)
+        status.config(
+            text=f"Dados prontos para PCA ({len(sr)} amostras)"
+        )
 
-   df_tratado.insert(
-    0,
-    df.columns[0],
-    df.iloc[:, 0]
-)
-  
-   df_tratado.to_excel(saida, index=True)
+        saida = filedialog.asksaveasfilename(
+            defaultextension=".xlsx",
+            filetypes=[("Excel files", "*.xlsx")],
+            title="Salvar dados tratados como"
+        )
+
+        if not saida:
+            status.config(text="Salvamento cancelado")
+            return
+
+        # Mantém todas as frequências e os nomes originais
+        df_tratado = pd.DataFrame(
+            sr,
+            index=ids_amostras,
+            columns=df.columns
+        )
+
+        df_tratado.index.name = "ID"
+
+        # Salva sem criar uma coluna extra de numeração
+        df_tratado.to_excel(
+            saida,
+            index=True
+        )
+
+        status.config(text="Dados tratados e salvos!")
+
+        messagebox.showinfo(
+            "Sucesso",
+            f"Tratamento concluído!\n\n"
+            f"Amostras: {len(df_tratado)}\n"
+            f"Colunas de medidas: {len(df_tratado.columns)}\n"
+            f"Arquivo salvo em:\n{saida}"
+        )
+
+    except Exception as e:
+        status.config(text="Erro ao processar os dados")
+        messagebox.showerror(
+            "Erro no processamento",
+            str(e)
+        )
+
 
 def aplicar_pca_interface():
    status.config(text="Selecionando Excel tratado... ")
@@ -119,7 +152,7 @@ def aplicar_pca_interface():
 
         X_pca, pca = banco_IC.aplicar_pca(sr)
 
-        banco_IC.plot_pca(X_pca, df)
+        banco_IC.plot_pca(X_pca, df, pca)
 
    status.config(text="PCA finalizado!")
 
