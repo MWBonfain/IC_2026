@@ -153,6 +153,14 @@ def aplicar_pca_interface():
         X_pca, pca = banco_IC.aplicar_pca(sr)
 
         banco_IC.plot_pca(X_pca, df, pca)
+        banco_IC.plot_variancia(pca)
+
+        nomes_variaveis = [
+            f"{sensor} - {frequencia} Hz"
+            for sensor, frequencia in df.columns
+        ]
+
+        banco_IC.plot_pesos(pca, nomes_variaveis)
 
    status.config(text="PCA finalizado!")
 

@@ -372,7 +372,6 @@ def aplicar_pca(X, n_componentes=2):
     print("Variância aplicada:", pca.explained_variance_ratio_)
     return X_pca, pca
     
-
 def plot_pca(X_pca, df, pca=None):
     # Confere se existem pelo menos dois componentes principais
     if X_pca.shape[1] < 2:
@@ -466,3 +465,141 @@ def plot_pca(X_pca, df, pca=None):
 
     fig.show()
     return fig
+
+def plot_variancia(pca, caminho_saida="pca_variancia.html"):
+    variancia = pca.explained_variance_ratio_ * 100
+    acumulada = np.cumsum(variancia)
+
+    componentes = [
+        f"PC{i + 1}" for i in range(len(variancia))
+    ]
+
+    fig = go.Figure()
+
+    # Barras: variância explicada por componente
+    fig.add_trace(go.Bar(
+        x=componentes,
+        y=variancia,
+        name="Variância individual (%)",
+        text=[f"{v:.2f}%" for v in variancia],
+        textposition="outside",
+        hovertemplate=(
+            "%{x}<br>"
+            "Variância explicada: %{y:.2f}%"
+            "<extra></extra>"
+        )
+    ))
+
+    # Linha: variância acumulada
+    fig.add_trace(go.Scatter(
+        x=componentes,
+        y=acumulada,
+        name="Variância acumulada (%)",
+        mode="lines+markers",
+        yaxis="y2",
+        hovertemplate=(
+            "%{x}<br>"
+            "Variância acumulada: %{y:.2f}%"
+            "<extra></extra>"
+        )
+    ))
+
+    fig.update_layout(
+        title="PCA — Variância explicada e acumulada",
+        xaxis_title="Componentes principais",
+        yaxis=dict(
+            title="Variância individual (%)",
+            rangemode="tozero"
+        ),
+        yaxis2=dict(
+            title="Variância acumulada (%)",
+            overlaying="y",
+            side="right",
+            range=[0, 105]
+        ),
+        template="plotly_white",
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="center",
+            x=0.5
+        ),
+        hovermode="x unified"
+    )
+
+    fig.write_html(caminho_saida, auto_open=True)
+    return fig
+
+def plot_pesos(pca, nomes_variaveis, caminho_saida="pca_pesos.html"):
+    componentes = pca.components_
+
+    if componentes.shape[0] < 2:
+        raise ValueError(
+            "São necessários pelo menos dois componentes "
+            "para gerar o gráfico de pesos."
+        )
+
+    if len(nomes_variaveis) != componentes.shape[1]:
+        raise ValueError(
+            "O número de nomes das variáveis não corresponde "
+            "ao número de variáveis usadas no PCA."
+        )
+
+    pesos = componentes[:2, :]
+    quantidade = min(25, len(nomes_variaveis))
+
+    indices = np.argsort(
+        np.max(np.abs(pesos), axis=0)
+    )[-quantidade:]
+
+    nomes = [str(nomes_variaveis[i]) for i in indices]
+    pesos_pc1 = pesos[0, indices]
+    pesos_pc2 = pesos[1, indices]
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Bar(
+        y=nomes,
+        x=pesos_pc1,
+        name="PC1",
+        orientation="h",
+        hovertemplate=(
+            "Variável: %{y}<br>"
+            "Peso em PC1: %{x:.4f}"
+            "<extra></extra>"
+        )
+    ))
+
+    fig.add_trace(go.Bar(
+        y=nomes,
+        x=pesos_pc2,
+        name="PC2",
+        orientation="h",
+        hovertemplate=(
+            "Variável: %{y}<br>"
+            "Peso em PC2: %{x:.4f}"
+            "<extra></extra>"
+        )
+    ))
+
+    fig.update_layout(
+        title="PCA — Pesos das variáveis (loadings)",
+        xaxis_title="Peso do componente principal",
+        yaxis_title="Variáveis (sensor e frequência)",
+        barmode="group",
+        template="plotly_white",
+        height=max(600, quantidade * 28),
+        legend_title="Componente"
+    )
+
+    fig.add_vline(
+        x=0,
+        line_dash="dash",
+        line_color="gray"
+    )
+
+    fig.write_html(caminho_saida, auto_open=True)
+    return fig
+
+
