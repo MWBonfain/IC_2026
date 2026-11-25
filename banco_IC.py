@@ -443,6 +443,7 @@ def plot_pca(X_pca, df, pca=None):
 
     fig.update_traces(
         textposition="top center",
+        mode="markers+text",
         marker=dict(size=11, opacity=0.85),
         textfont=dict(size=10)
     )
@@ -454,16 +455,57 @@ def plot_pca(X_pca, df, pca=None):
         font=dict(family="Arial", size=13),
         title_x=0.5,
         xaxis=dict(
+            title=dict(font=dict(size=18)),
+            showline=True,
+            linewidth=2,
+            linecolor="black",
+            mirror=True,
+            ticks="outside",
+            tickcolor="black",
+            showgrid=True,
+            gridcolor="#DDDDDD",
             zeroline=True,
-            showgrid=True
+            zerolinecolor="black",
+            zerolinewidth=1
         ),
         yaxis=dict(
+            title=dict(font=dict(size=18)),
+            showline=True,
+            linewidth=2,
+            linecolor="black",
+            mirror=True,
+            ticks="outside",
+            tickcolor="black",
+            showgrid=True,
+            gridcolor="#DDDDDD",
             zeroline=True,
-            showgrid=True
+            zerolinecolor="black",
+            zerolinewidth=1
         )
     )
+    fig.update_layout(
+    updatemenus=[
+        dict(
+            type="buttons",
+            direction="right",
+            x=1.02,
+            y=0.75,
+            xanchor="left",
+            yanchor="top",
+            buttons=[
+                dict(
+                    label="Mostrar nomes",
+                    method="restyle",
+                    args=[{"mode": "markers+text"}],
+                    args2=[{"mode": "markers"}]
+                )
+            ]
+        )
+    ]
+)
 
-    fig.show()
+
+    fig.write_html("grafico_pca.html", auto_open=True)
     return fig
 
 def plot_variancia(pca, caminho_saida="pca_variancia.html"):
