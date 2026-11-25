@@ -1,31 +1,37 @@
 # Análise de Dados de Espectrometria por Impedância
 
-Este projeto tem como objetivo organizar, processar e analisar dados laboratoriais de espectrometria por impedância, utilizando Python e técnicas de ciência de dados.
+Este projeto tem como objetivo desenvolver uma ferramenta computacional para organizar, processar e analisar dados experimentais de espectrometria por impedância, utilizando Python e técnicas de ciência de dados.
 
-O sistema foi desenvolvido como parte de uma Iniciação Científica na UNICAMP (PROFIS), com foco na estruturação de dados experimentais e aplicação futura de métodos de Machine Learning.
+O sistema está sendo desenvolvido como parte de uma Iniciação Científica no Programa de Formação Interdisciplinar Superior (ProFIS) da Universidade Estadual de Campinas (UNICAMP), com foco na otimização do fluxo de processamento de dados de uma língua eletrônica impedimétrica.
+
+A proposta busca reduzir etapas manuais, melhorar a organização dos dados experimentais e estabelecer uma base computacional para análises estatísticas e futuras aplicações de Machine Learning.
 
 ---
 
-## Funcionalidades
+## Funcionalidades implementadas
 
-* Leitura automática de arquivos `.csv`, incluindo diferentes formatos
-* Tratamento e padronização dos dados
-* Geração de dataset estruturado em Excel
-* Visualização de curvas de impedância
-* Interface gráfica para seleção de arquivos (Tkinter)
-* Pipeline automatizado de processamento
+- Leitura automática de arquivos `.csv`, incluindo diferentes formatos e delimitadores.
+- Extração e organização das informações de amostras, sensores e repetições.
+- Geração automatizada de datasets estruturados em Excel.
+- Organização dos dados por sensores e frequências.
+- Interface gráfica para seleção de arquivos utilizando Tkinter.
+- Preparação e tratamento dos dados experimentais.
+- Centralização e padronização das variáveis.
+- Aplicação de PCA (Análise de Componentes Principais).
+- Visualização interativa dos resultados do PCA utilizando Plotly.
+- Identificação das classes das amostras e visualização de sua distribuição no espaço dos componentes principais.
 
 ---
 
 ## Estrutura do Projeto
 
-```id="n92b3p"
+```text
 IC_2026/
 │
 ├── Amostras_antes/        # Arquivos CSV brutos
 ├── dados_processados/     # Arquivos Excel gerados
 │
-├── banco_IC.py            # Processamento e organização dos dados
+├── banco_IC.py            # Processamento, tratamento e análise dos dados
 ├── interface_IC.py        # Interface gráfica (Tkinter)
 │
 └── README.md              # Documentação do projeto
@@ -33,96 +39,104 @@ IC_2026/
 
 ---
 
-## Como funciona
+## Pipeline de processamento
 
-Cada arquivo CSV contém dados de impedância elétrica em diferentes frequências.
+O fluxo de processamento foi desenvolvido para automatizar as etapas de organização e análise dos dados experimentais.
 
-O sistema:
+1. Leitura dos arquivos CSV.
+2. Identificação automática dos delimitadores.
+3. Extração das informações de amostras, sensores e repetições.
+4. Organização dos valores de impedância por frequência.
+5. Exportação dos dados estruturados para Excel.
+6. Preparação, centralização e padronização dos dados.
+7. Aplicação da Análise de Componentes Principais (PCA).
+8. Geração de visualizações interativas para exploração dos resultados.
 
-1. Lê os arquivos CSV
-2. Detecta automaticamente o delimitador (`;` ou `,`)
-3. Extrai informações relevantes:
+---
 
-   * Amostra
-   * Sensor (IDE)
-   * Repetição
-4. Organiza os valores em colunas (`f_0`, `f_1`, ..., `f_n`)
-5. Gera um dataset estruturado em Excel
+## Análise por Componentes Principais (PCA)
+
+A ferramenta já conta com uma etapa de análise multivariada utilizando PCA, permitindo reduzir a dimensionalidade dos dados e investigar possíveis padrões de distribuição entre as classes de amostras.
+
+A visualização interativa permite:
+
+- Observar a distribuição das amostras nos componentes principais.
+- Identificar as classes por cores.
+- Consultar informações individuais de cada amostra.
+- Alternar a exibição dos nomes das amostras.
+- Visualizar a porcentagem de variância explicada por cada componente.
+
+Em um dos conjuntos experimentais utilizados nos testes, foram processadas 28 amostras e 124 variáveis. Os dois primeiros componentes principais explicaram aproximadamente 88% da variância total dos dados.
+
+*Esse resultado é referente a um conjunto específico de testes, não representando necessariamente todos os conjuntos experimentais.*
 
 ---
 
 ## Como executar
 
-### 1. Instalar dependências
+### 1. Instalar as dependências
 
-```bash id="yr5o2p"
-pip install pandas numpy matplotlib
+```bash
+pip install pandas numpy matplotlib scikit-learn plotly openpyxl
 ```
-
----
 
 ### 2. Executar a interface
 
-```bash id="rj0xg2"
+```bash
 python interface_IC.py
 ```
 
----
+### 3. Fluxo de utilização
 
-### 3. Fluxo de uso
-
-* Selecionar os arquivos `.csv`
-* O sistema irá:
-
-  * Processar os dados
-  * Gerar automaticamente um arquivo Excel em `dados_processados/`
+- Selecionar os arquivos CSV experimentais.
+- Executar o processamento pela interface.
+- Gerar automaticamente o arquivo Excel na pasta `dados_processados/`.
+- Utilizar os dados organizados nas etapas de tratamento e análise.
 
 ---
 
-## Visualização de Dados
+## Próximas etapas
 
-O sistema permite visualizar curvas de impedância para análise exploratória dos dados, representando o comportamento elétrico das amostras em função da frequência.
-
----
-
-## Próximos passos
-
-* Aplicação de PCA (Análise de Componentes Principais)
-* Implementação de modelos de Machine Learning para classificação
-* Identificação automática de padrões em amostras
-* Melhorias na interface gráfica
-* Organização por categorias de amostras
+- Aprimoramento da interface gráfica.
+- Avaliação da separação e distribuição das classes no PCA.
+- Testes com novos conjuntos de dados experimentais.
+- Implementação de métodos de classificação.
+- Investigação de técnicas de Machine Learning para identificação e predição de amostras.
+- Avaliação dos resultados obtidos e comparação entre diferentes abordagens.
 
 ---
 
-## Objetivo da Pesquisa
+## Objetivo da pesquisa
 
-Desenvolver uma ferramenta capaz de:
-
-* Organizar dados laboratoriais de forma automatizada
-* Reduzir ruídos e inconsistências
-* Auxiliar na análise científica
-* Permitir classificação e predição de amostras
+Desenvolver uma ferramenta computacional capaz de otimizar o fluxo de processamento de dados experimentais de uma língua eletrônica impedimétrica, reduzindo intervenções manuais e contribuindo para a organização, análise e interpretação dos resultados.
 
 ---
 
 ## Tecnologias utilizadas
 
-* Python
-* Pandas
-* NumPy
-* Matplotlib
-* Tkinter
+- Python
+- Pandas
+- NumPy
+- Scikit-learn
+- Matplotlib
+- Plotly
+- Tkinter
+- OpenPyXL
 
 ---
 
-## Autor
+## Contexto acadêmico
 
-Mikael Wesley
-Iniciação Científica – PROFIS / UNICAMP
+Projeto desenvolvido no âmbito de Iniciação Científica do Programa de Formação Interdisciplinar Superior (ProFIS), na Universidade Estadual de Campinas (UNICAMP).
+
+**Área:** Física e Computação
+
+**Tema:** Organização e processamento de dados e predição.
+
+**Título da pesquisa:** Otimização do fluxo de dados em uma língua eletrônica impedimétrica.
 
 ---
 
 ## Licença
 
-Este projeto é acadêmico e destinado a fins educacionais e de pesquisa.
+Projeto acadêmico destinado a fins educacionais e de pesquisa.
